@@ -23,13 +23,14 @@ class BiliTurboService private constructor(
     private val port: Int,
 ): Thread() {
     private val boss = NioEventLoopGroup()
-    private val worker = NioEventLoopGroup(2)
+    private val worker = NioEventLoopGroup()
 
     override fun run() {
         try {
             onProxy()
         } catch (e: Exception) {
             e.printStackTrace()
+        } finally {
             this.interrupt()
         }
     }

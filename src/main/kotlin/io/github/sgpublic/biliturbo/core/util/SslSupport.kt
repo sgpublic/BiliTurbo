@@ -1,5 +1,6 @@
 package io.github.sgpublic.biliturbo.core.util
 
+import io.github.sgpublic.biliturbo.module.ApiModule
 import io.netty.buffer.ByteBufAllocator
 import io.netty.handler.ssl.SslContextBuilder
 import io.netty.handler.ssl.SslHandler
@@ -18,22 +19,23 @@ import java.net.InetSocketAddress
 import java.security.*
 import java.security.cert.CertificateFactory
 import java.security.cert.X509Certificate
+import java.security.spec.EncodedKeySpec
 import java.security.spec.PKCS8EncodedKeySpec
 import java.util.*
 import kotlin.random.Random
-import kotlin.random.asJavaRandom
 
 object SslSupport {
-    private val crt: X509Certificate
+    val certificate: X509Certificate
     private val der: PrivateKey
     private val issuer: String
     private val keyPair: KeyPair
     init {
         val loader = Thread.currentThread().contextClassLoader
-        crt = readCrt(loader)
+        certificate = readCrt(loader)
         der = readDer(loader)
-        issuer = crt.issuerX500Principal.toString().split(", ")
+        issuer = certificate.issuerX500Principal.toString().split(", ")
             .reversed().joinToString(", ")
+        Log.d("issuer: $issuer")
         keyPair = genKeyPair()
     }
 
@@ -63,7 +65,7 @@ object SslSupport {
             ?: loader.getResourceAsStream(derPath)
         val factory = KeyFactory.getInstance("RSA")
         val spec = PKCS8EncodedKeySpec(der.readAllBytes())
-        return factory.generatePrivate(spec)
+        return factory.generatePrivate(spec as EncodedKeySpec)
     }
 
     private fun genKeyPair(): KeyPair {
@@ -74,7 +76,7 @@ object SslSupport {
     }
 
     private val certCache = HashMap<String, X509Certificate>()
-    private val random = Random.asJavaRandom()
+    private val random = Random.Default
     private fun getCert(host: String): X509Certificate {
         val hostname = host.trim().lowercase(Locale.getDefault())
         Log.d("get cert for $hostname")
@@ -83,10 +85,11 @@ object SslSupport {
             return it
         }
         val subject = "C=CN, ST=SC, L=CD, O=BiliTurbo, OU=study, CN=${hostname}"
-        val id = BigInteger(System.currentTimeMillis().toString() + random.nextLong(1000, 9999), 10)
+        val id = BigInteger(ApiModule.TS_FULL_STR + random.nextInt(1000, 9999))
+//        val id = BigInteger.valueOf(System.currentTimeMillis() + (Math.random() * 10000).toLong() + 1000)
         Log.d("create cert for $hostname: (id = ${id.toString(10)})")
         val jv3Builder = JcaX509v3CertificateBuilder(
-            X500Name(issuer), id, crt.notBefore, crt.notAfter,
+            X500Name(issuer), id, certificate.notBefore, certificate.notAfter,
             X500Name(subject), keyPair.public
         )
         val names = GeneralNames(GeneralName(GeneralName.dNSName, hostname))

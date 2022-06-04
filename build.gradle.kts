@@ -49,7 +49,7 @@ tasks.withType<KotlinCompile> {
 
 compose.desktop {
     application {
-        mainClass = "io.github.sgpublic.biliturbo.MainKt"
+        mainClass = "io.github.sgpublic.biliturbo.Application"
         nativeDistributions {
             targetFormats(TargetFormat.Dmg, TargetFormat.Msi, TargetFormat.Deb)
             packageName = "BiliTurbo"

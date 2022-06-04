@@ -19,7 +19,7 @@ class PlaintextResponseHandler(
             is DefaultHttpContent -> msg.content().toString(Charset.defaultCharset())
             else -> msg.toString()
         }
-        Log.d("[HttpProxyResponseHandler] resolve data: \n$content")
+        Log.d("[PlaintextResponseHandler] resolve data: \n$content")
         client.writeAndFlush(msg)
     }
 }

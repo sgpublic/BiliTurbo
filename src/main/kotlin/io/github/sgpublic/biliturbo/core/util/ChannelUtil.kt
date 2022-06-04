@@ -7,9 +7,7 @@ import io.netty.channel.ChannelPipeline
 import io.netty.util.AttributeKey
 
 fun ChannelHandlerContext.removePipeline(vararg names: Class<out ChannelHandler>): ChannelHandlerContext {
-    pipeline().also {
-        it.remove(*names)
-    }
+    pipeline().remove(*names)
     return this
 }
 
@@ -38,9 +36,7 @@ fun ChannelHandlerContext.addPipelineBefore(target: Class<out ChannelHandler>, h
 }
 
 fun Channel.removePipeline(vararg names: Class<out ChannelHandler>): Channel {
-    pipeline().also {
-        it.remove(*names)
-    }
+    pipeline().remove(*names)
     return this
 }
 
@@ -75,14 +71,14 @@ fun ChannelPipeline.remove(vararg names: Class<out ChannelHandler>): ChannelPipe
     return this
 }
 
-fun ChannelPipeline.addLast(vararg handlers: ChannelHandler): ChannelPipeline {
+fun ChannelPipeline.addAllToLast(vararg handlers: ChannelHandler): ChannelPipeline {
     for (handler: ChannelHandler in handlers) {
         addLast(handler.javaClass.simpleName, handler)
     }
     return this
 }
 
-fun ChannelPipeline.addFirst(vararg handlers: ChannelHandler): ChannelPipeline {
+fun ChannelPipeline.addAllToFirst(vararg handlers: ChannelHandler): ChannelPipeline {
     for (handler: ChannelHandler in handlers) {
         addFirst(handler.javaClass.simpleName, handler)
     }

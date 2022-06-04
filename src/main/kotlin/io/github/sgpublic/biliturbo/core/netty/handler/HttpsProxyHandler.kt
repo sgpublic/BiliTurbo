@@ -16,8 +16,7 @@ class HttpsProxyHandler: ChannelInboundHandlerAdapter(), ProxyHandler {
         val request = ctx.getAttr(BiliTurboService.DST_ADDRESS)
         if (msg is HttpRequest) {
             sendToServer(request, ctx, msg)
-        } else if (msg !is HttpContent && msg is ByteBuf
-            && msg.getByte(0).toInt() == 22) {
+        } else if (msg is ByteBuf && msg.getByte(0).toInt() == 22) {
             sendToClient(request, ctx, msg)
         }
     }
@@ -25,7 +24,7 @@ class HttpsProxyHandler: ChannelInboundHandlerAdapter(), ProxyHandler {
     override fun sendToServer(request: InetSocketAddress, ctx: ChannelHandlerContext, msg: Any) {
         val client = ctx.channel()
         val bootstrap = Bootstrap()
-        bootstrap.group(NioEventLoopGroup(1))
+        bootstrap.group(NioEventLoopGroup())
             .channel(NioSocketChannel::class.java)
             .handler(object : ChannelInitializer<Channel>() {
                 override fun initChannel(ch: Channel) {
