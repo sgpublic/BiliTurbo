@@ -8,6 +8,6 @@
     openssl pkcs8 -topk8 -nocrypt -inform PEM -outform DER -in biliturbo.key -out biliturbo_private.der
     ```
     You will get three files: a `key` file, a `crt` file and a `der` file.
-2. Go to your BiliTurbo running directory, create a new folder named `cert`, copy the `key` file you just generated into this directory and rename it to `biliturbo.key`, and copy the `der` file into this directory and rename it for `biliturbo_private.der`.
+2. Go to your BiliTurbo running directory, create a new folder named `cert`, copy the `key` file you just generated into this directory and rename it to `certificate.key`, and copy the `der` file into this directory and rename it for `private.der`.
 3. Install the `crt` file into your computer's `Trusted Root Certification Authorities` certificate store.
-4. Enjoy!
+4. Emjoy!

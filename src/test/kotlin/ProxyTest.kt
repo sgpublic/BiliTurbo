@@ -25,14 +25,26 @@ class ProxyTest {
         override fun checkServerTrusted(p0: Array<out X509Certificate>?, p1: String?) { }
 
         override fun getAcceptedIssuers(): Array<X509Certificate> {
-            return arrayOf(SslSupport.certificate)
+            return arrayOf(SslSupport.CERTIFICATE)
         }
     }
 
     @BeforeAll
     fun startProxy() {
         sc.init(null, arrayOf<TrustManager>(tm), SecureRandom())
-        BiliTurboService.start()
+        BiliTurboService.start(object : BiliTurboService.Callback {
+            override fun onStart() {
+
+            }
+
+            override fun onStop() {
+                throw IllegalStateException()
+            }
+
+            override fun onException(e: Exception) {
+                throw e
+            }
+        })
         Thread.sleep(2000)
     }
 

@@ -35,6 +35,9 @@ dependencies {
 
     // https://mvnrepository.com/artifact/com.google.code.gson/gson
     implementation("com.google.code.gson:gson:2.9.0")
+
+    // https://mvnrepository.com/artifact/org.ini4j/ini4j
+    implementation("org.ini4j:ini4j:0.5.4")
 }
 
 tasks.test {

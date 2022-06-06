@@ -5,6 +5,7 @@ import io.github.sgpublic.biliturbo.core.netty.handler.HttpsProxyHandler
 import io.github.sgpublic.biliturbo.core.netty.handler.SocketProxyHandler
 import io.github.sgpublic.biliturbo.core.util.HostPort
 import io.github.sgpublic.biliturbo.core.util.Log
+import io.github.sgpublic.biliturbo.core.util.SslSupport
 import io.github.sgpublic.biliturbo.core.util.addPipelineLast
 import io.netty.bootstrap.ServerBootstrap
 import io.netty.channel.Channel
@@ -21,15 +22,18 @@ import io.netty.util.AttributeKey
 
 class BiliTurboService private constructor(
     private val port: Int = PORT,
+    private val callback: Callback,
 ): Thread() {
     private val boss = NioEventLoopGroup()
     private val worker = NioEventLoopGroup()
 
     override fun run() {
         try {
+            SslSupport.init()
             onProxy()
         } catch (e: Exception) {
-            e.printStackTrace()
+            Log.e("error happened", e)
+            callback.onException(e)
         } finally {
             this.interrupt()
         }
@@ -54,14 +58,16 @@ class BiliTurboService private constructor(
                 }
             })
 
-        b.bind(port).sync()
-            .channel().closeFuture().sync()
+        val fc = b.bind(port).sync()
+        callback.onStart()
+        fc.channel().closeFuture().sync()
     }
 
     override fun interrupt() {
         worker.shutdownGracefully()
         boss.shutdownGracefully()
         super.interrupt()
+        callback.onStop()
     }
 
     companion object {
@@ -74,13 +80,23 @@ class BiliTurboService private constructor(
         @Suppress("PLATFORM_CLASS_MAPPED_TO_KOTLIN")
         private val lock: Object = Object()
 
-        fun start(port: Int = 23333) {
+        fun start(callback: Callback, port: Int = 23333) {
             synchronized(lock) {
                 biliTurboService?.let {
                     Log.d("Proxy already started.")
                     return
                 }
-                biliTurboService = BiliTurboService(port).also {
+                biliTurboService = BiliTurboService(
+                    port, object : Callback {
+                        override fun onStart() { callback.onStart() }
+                        override fun onException(e: Exception) { callback.onException(e) }
+                        override fun onStop() {
+                            biliTurboService = null
+                            SslSupport.clearCertCaches()
+                            callback.onStop()
+                        }
+                    }
+                ).also {
                     it.start()
                 }
                 Log.i("Proxy started.")
@@ -100,5 +116,11 @@ class BiliTurboService private constructor(
                 Log.i("Proxy stopped.")
             }
         }
+    }
+
+    interface Callback {
+        fun onStart()
+        fun onStop()
+        fun onException(e: Exception)
     }
 }

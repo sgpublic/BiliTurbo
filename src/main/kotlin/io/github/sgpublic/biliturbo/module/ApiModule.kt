@@ -6,6 +6,8 @@ import io.github.sgpublic.biliturbo.core.util.dstAddress
 import io.netty.handler.codec.http.FullHttpResponse
 import io.netty.handler.codec.http.HttpRequest
 import io.netty.handler.codec.http.HttpResponse
+import java.math.BigInteger
+import kotlin.random.Random
 
 class ApiModule private constructor(
     private val actions: LinkedHashSet<BiliTurboProxyModule>
@@ -15,6 +17,8 @@ class ApiModule private constructor(
         val TS_STR: String get() = (System.currentTimeMillis() / 1000).toString()
         val TS_FULL: Long get() = System.currentTimeMillis()
         val TS_FULL_STR: String get() = System.currentTimeMillis().toString()
+        val RANDOM_TS: BigInteger get() = BigInteger(System.currentTimeMillis().toString() +
+                Random.nextInt(1000, 10000))
 
         private val actions = linkedSetOf<BiliTurboProxyModule>()
         fun getInstance(): ApiModule {

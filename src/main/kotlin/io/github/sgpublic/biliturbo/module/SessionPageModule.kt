@@ -1,4 +1,4 @@
-package io.github.sgpublic.biliturbo.module.web
+package io.github.sgpublic.biliturbo.module
 
 import io.github.sgpublic.biliturbo.base.BiliTurboProxyModule
 import io.netty.bootstrap.Bootstrap
