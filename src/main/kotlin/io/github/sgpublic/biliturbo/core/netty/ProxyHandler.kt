@@ -1,10 +1,10 @@
 package io.github.sgpublic.biliturbo.core.netty
 
+import io.github.sgpublic.biliturbo.core.util.HostPort
 import io.netty.channel.ChannelHandlerContext
-import java.net.InetSocketAddress
 
 interface ProxyHandler {
-    fun sendToServer(request: InetSocketAddress, ctx: ChannelHandlerContext, msg: Any) { }
+    fun sendToServer(address: HostPort, ctx: ChannelHandlerContext, msg: Any) { }
 
-    fun sendToClient(request: InetSocketAddress, ctx: ChannelHandlerContext, msg: Any) { }
+    fun sendToClient(address: HostPort, ctx: ChannelHandlerContext, msg: Any) { }
 }

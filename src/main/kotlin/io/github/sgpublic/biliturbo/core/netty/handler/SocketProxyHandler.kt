@@ -2,11 +2,11 @@ package io.github.sgpublic.biliturbo.core.netty.handler
 
 import io.github.sgpublic.biliturbo.core.netty.BiliTurboService
 import io.github.sgpublic.biliturbo.core.netty.ProxyHandler
+import io.github.sgpublic.biliturbo.core.util.HostPort
 import io.github.sgpublic.biliturbo.core.util.addPipelineLast
 import io.github.sgpublic.biliturbo.core.util.getAttr
 import io.netty.bootstrap.Bootstrap
 import io.netty.channel.*
-import java.net.InetSocketAddress
 
 class SocketProxyHandler: ChannelInboundHandlerAdapter(), ProxyHandler {
     override fun channelRead(ctx: ChannelHandlerContext, msg: Any) {
@@ -14,7 +14,7 @@ class SocketProxyHandler: ChannelInboundHandlerAdapter(), ProxyHandler {
         sendToServer(request, ctx, msg)
     }
 
-    override fun sendToServer(request: InetSocketAddress, ctx: ChannelHandlerContext, msg: Any) {
+    override fun sendToServer(address: HostPort, ctx: ChannelHandlerContext, msg: Any) {
         val cf = Bootstrap().group(ctx.channel().eventLoop())
             .channel(ctx.channel().javaClass)
             .handler(object : ChannelInitializer<Channel>() {
@@ -22,7 +22,7 @@ class SocketProxyHandler: ChannelInboundHandlerAdapter(), ProxyHandler {
                     ch.addPipelineLast(SocksResponseHandler())
                 }
             })
-            .connect(request.hostName, request.port)
+            .connect(address.hostName, address.port)
         cf.addListener(object : ChannelFutureListener {
             override fun operationComplete(future: ChannelFuture) {
                 if (future.isSuccess) {

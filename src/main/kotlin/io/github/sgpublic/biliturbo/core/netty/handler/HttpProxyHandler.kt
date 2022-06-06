@@ -2,15 +2,11 @@ package io.github.sgpublic.biliturbo.core.netty.handler
 
 import io.github.sgpublic.biliturbo.core.netty.BiliTurboService
 import io.github.sgpublic.biliturbo.core.netty.ProxyHandler
-import io.github.sgpublic.biliturbo.core.util.addPipelineLast
-import io.github.sgpublic.biliturbo.core.util.dstAddress
-import io.github.sgpublic.biliturbo.core.util.getAttrOrDefault
-import io.github.sgpublic.biliturbo.core.util.removePipeline
+import io.github.sgpublic.biliturbo.core.util.*
 import io.netty.bootstrap.Bootstrap
 import io.netty.channel.*
 import io.netty.handler.codec.http.*
 import io.netty.util.ReferenceCountUtil
-import java.net.InetSocketAddress
 
 class HttpProxyHandler: ChannelInboundHandlerAdapter(), ProxyHandler {
     override fun channelRead(ctx: ChannelHandlerContext, msg: Any) {
@@ -39,7 +35,7 @@ class HttpProxyHandler: ChannelInboundHandlerAdapter(), ProxyHandler {
         }
     }
 
-    override fun sendToServer(request: InetSocketAddress, ctx: ChannelHandlerContext, msg: Any) {
+    override fun sendToServer(address: HostPort, ctx: ChannelHandlerContext, msg: Any) {
         val bootstrap = Bootstrap()
         bootstrap.group(ctx.channel().eventLoop())
             .channel(ctx.channel().javaClass)
@@ -49,11 +45,11 @@ class HttpProxyHandler: ChannelInboundHandlerAdapter(), ProxyHandler {
                         HttpRequestEncoder(),
                         HttpResponseDecoder(),
                         HttpObjectAggregator(6553600),
-                        PlaintextResponseHandler(ctx.channel()),
+                        PlaintextResponseHandler(msg as HttpRequest, ctx.channel()),
                     )
                 }
             })
-        val cf = bootstrap.connect(request.hostName, request.port)
+        val cf = bootstrap.connect(address.hostName, address.port)
         cf.addListener(object : ChannelFutureListener {
             override fun operationComplete(future: ChannelFuture) {
                 if (future.isSuccess) {

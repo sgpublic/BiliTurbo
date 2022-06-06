@@ -3,18 +3,13 @@ import org.jetbrains.compose.desktop.application.dsl.TargetFormat
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
-    kotlin("jvm") version "1.6.10"
+    val kotlin = "1.6.10"
+    kotlin("jvm") version kotlin
     id("org.jetbrains.compose") version "1.1.1"
 }
 
 group = "io.github.sgpublic"
 version = "1.0"
-
-repositories {
-    google()
-    mavenCentral()
-    maven("https://maven.pkg.jetbrains.space/public/p/compose/dev")
-}
 
 dependencies {
     testImplementation(kotlin("test"))
@@ -37,6 +32,9 @@ dependencies {
 
     // https://mvnrepository.com/artifact/org.bouncycastle/bcpkix-jdk15on
     implementation("org.bouncycastle:bcpkix-jdk15on:1.70")
+
+    // https://mvnrepository.com/artifact/com.google.code.gson/gson
+    implementation("com.google.code.gson:gson:2.9.0")
 }
 
 tasks.test {

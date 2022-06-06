@@ -3,9 +3,8 @@ package io.github.sgpublic.biliturbo.core.util
 import io.netty.handler.codec.http.FullHttpRequest
 import io.netty.handler.codec.http.HttpMethod
 import io.netty.handler.codec.http.HttpRequest
-import java.net.InetSocketAddress
 
-fun HttpRequest.dstAddress(): InetSocketAddress {
+fun HttpRequest.dstAddress(): HostPort {
     val arr = headers().getAsString("Host").split(":")
     val host: String = arr[0]
     var port = 80
@@ -15,8 +14,15 @@ fun HttpRequest.dstAddress(): InetSocketAddress {
         port = 443
     }
 
-    return InetSocketAddress(host, port).also {
-        Log.d(it.toString())
+    return HostPort(host, port)
+}
+
+data class HostPort(
+    val hostName: String,
+    val port: Int,
+) {
+    override fun toString(): String {
+        return "$hostName:$port"
     }
 }
 

@@ -9,7 +9,6 @@ import io.netty.channel.*
 import io.netty.channel.nio.NioEventLoopGroup
 import io.netty.channel.socket.nio.NioSocketChannel
 import io.netty.handler.codec.http.*
-import java.net.InetSocketAddress
 
 class HttpsProxyHandler: ChannelInboundHandlerAdapter(), ProxyHandler {
     override fun channelRead(ctx: ChannelHandlerContext, msg: Any) {
@@ -21,7 +20,7 @@ class HttpsProxyHandler: ChannelInboundHandlerAdapter(), ProxyHandler {
         }
     }
 
-    override fun sendToServer(request: InetSocketAddress, ctx: ChannelHandlerContext, msg: Any) {
+    override fun sendToServer(address: HostPort, ctx: ChannelHandlerContext, msg: Any) {
         val client = ctx.channel()
         val bootstrap = Bootstrap()
         bootstrap.group(NioEventLoopGroup())
@@ -29,13 +28,14 @@ class HttpsProxyHandler: ChannelInboundHandlerAdapter(), ProxyHandler {
             .handler(object : ChannelInitializer<Channel>() {
                 override fun initChannel(ch: Channel) {
                     ch.addPipelineLast(
-                        SslSupport.newClientSslHandler(ch.alloc(), request),
+                        SslSupport.newClientSslHandler(ch.alloc(), address),
                         HttpClientCodec(),
-                        PlaintextResponseHandler(client)
+                        HttpObjectAggregator(6553600),
+                        PlaintextResponseHandler(msg as HttpRequest, client)
                     )
                 }
             })
-        val cf = bootstrap.connect(request.hostName, request.port)
+        val cf = bootstrap.connect(address.hostName, address.port)
         cf.addListener(object : ChannelFutureListener {
             override fun operationComplete(future: ChannelFuture) {
                 if (!future.isSuccess) {
@@ -46,11 +46,11 @@ class HttpsProxyHandler: ChannelInboundHandlerAdapter(), ProxyHandler {
         })
     }
 
-    override fun sendToClient(request: InetSocketAddress, ctx: ChannelHandlerContext, msg: Any) {
+    override fun sendToClient(address: HostPort, ctx: ChannelHandlerContext, msg: Any) {
         ctx.addPipelineFirst(
             HttpRequestDecoder(),
             HttpResponseEncoder(),
-            SslSupport.newServerSslHandler(ctx.alloc(), request.hostName),
+            SslSupport.newServerSslHandler(ctx.alloc(), address.hostName),
         )
         ctx.addPipelineLast(
             HttpObjectAggregator(65536),

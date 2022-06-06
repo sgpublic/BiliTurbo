@@ -3,6 +3,7 @@ package io.github.sgpublic.biliturbo.core.netty
 import io.github.sgpublic.biliturbo.core.netty.handler.HttpProxyHandler
 import io.github.sgpublic.biliturbo.core.netty.handler.HttpsProxyHandler
 import io.github.sgpublic.biliturbo.core.netty.handler.SocketProxyHandler
+import io.github.sgpublic.biliturbo.core.util.HostPort
 import io.github.sgpublic.biliturbo.core.util.Log
 import io.github.sgpublic.biliturbo.core.util.addPipelineLast
 import io.netty.bootstrap.ServerBootstrap
@@ -17,10 +18,9 @@ import io.netty.handler.codec.http.HttpResponseEncoder
 import io.netty.handler.logging.LogLevel
 import io.netty.handler.logging.LoggingHandler
 import io.netty.util.AttributeKey
-import java.net.InetSocketAddress
 
 class BiliTurboService private constructor(
-    private val port: Int,
+    private val port: Int = PORT,
 ): Thread() {
     private val boss = NioEventLoopGroup()
     private val worker = NioEventLoopGroup()
@@ -65,8 +65,10 @@ class BiliTurboService private constructor(
     }
 
     companion object {
-        val DST_ADDRESS: AttributeKey<InetSocketAddress> = AttributeKey.valueOf("CLIENT_REQUEST")
+        val DST_ADDRESS: AttributeKey<HostPort> = AttributeKey.valueOf("CLIENT_REQUEST")
         val IS_HTTPS: AttributeKey<Boolean> = AttributeKey.valueOf("IS_HTTPS")
+
+        const val PORT: Int = 23333
 
         private var biliTurboService: BiliTurboService? = null
         @Suppress("PLATFORM_CLASS_MAPPED_TO_KOTLIN")

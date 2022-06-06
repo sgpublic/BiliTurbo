@@ -14,8 +14,8 @@ import org.bouncycastle.cert.jcajce.JcaX509v3CertificateBuilder
 import org.bouncycastle.jce.provider.BouncyCastleProvider
 import org.bouncycastle.operator.jcajce.JcaContentSignerBuilder
 import java.io.File
+import java.io.InputStream
 import java.math.BigInteger
-import java.net.InetSocketAddress
 import java.security.*
 import java.security.cert.CertificateFactory
 import java.security.cert.X509Certificate
@@ -26,21 +26,21 @@ import kotlin.random.Random
 
 object SslSupport {
     val certificate: X509Certificate
-    private val der: PrivateKey
+    private val privateKey: PrivateKey
     private val issuer: String
     private val keyPair: KeyPair
+
     init {
         val loader = Thread.currentThread().contextClassLoader
-        certificate = readCrt(loader)
-        der = readDer(loader)
-        issuer = certificate.issuerX500Principal.toString().split(", ")
-            .reversed().joinToString(", ")
-        Log.d("issuer: $issuer")
+        certificate = readCertificate(loader)
+        privateKey = readPrivateKey(loader)
+        issuer = certificate.issuerX500Principal.toString()
+            .split(", ").reversed().joinToString(", ")
         keyPair = genKeyPair()
     }
 
     private val clientSslCtx = SslContextBuilder.forClient().trustManager(InsecureTrustManagerFactory.INSTANCE).build()
-    fun newClientSslHandler(allocator: ByteBufAllocator, request: InetSocketAddress): SslHandler {
+    fun newClientSslHandler(allocator: ByteBufAllocator, request: HostPort): SslHandler {
         return clientSslCtx.newHandler(allocator, request.hostName, request.port)
     }
 
@@ -49,20 +49,20 @@ object SslSupport {
         return serverSslCtx.newHandler(allocator)
     }
 
-    private fun readCrt(loader: ClassLoader): X509Certificate {
+    private fun readCertificate(loader: ClassLoader): X509Certificate {
         val crtPath = "cert/biliturbo.crt"
-        val crt = File(crtPath)
+        val crt: InputStream = File(crtPath)
             .takeIf { it.fileExist() }?.inputStream()
-            ?: loader.getResourceAsStream(crtPath)
+            ?: loader.getResourceAsStream(crtPath)!!
         val cf = CertificateFactory.getInstance("X.509")
         return cf.generateCertificate(crt) as X509Certificate
     }
 
-    private fun readDer(loader: ClassLoader): PrivateKey {
+    private fun readPrivateKey(loader: ClassLoader): PrivateKey {
         val derPath = "cert/biliturbo_private.der"
-        val der = File(derPath)
+        val der: InputStream = File(derPath)
             .takeIf { it.fileExist() }?.inputStream()
-            ?: loader.getResourceAsStream(derPath)
+            ?: loader.getResourceAsStream(derPath)!!
         val factory = KeyFactory.getInstance("RSA")
         val spec = PKCS8EncodedKeySpec(der.readAllBytes())
         return factory.generatePrivate(spec as EncodedKeySpec)
@@ -79,22 +79,18 @@ object SslSupport {
     private val random = Random.Default
     private fun getCert(host: String): X509Certificate {
         val hostname = host.trim().lowercase(Locale.getDefault())
-        Log.d("get cert for $hostname")
         certCache[hostname]?.let {
-            Log.d("find cert cache for $hostname")
             return it
         }
         val subject = "C=CN, ST=SC, L=CD, O=BiliTurbo, OU=study, CN=${hostname}"
-        val id = BigInteger(ApiModule.TS_FULL_STR + random.nextInt(1000, 9999))
-//        val id = BigInteger.valueOf(System.currentTimeMillis() + (Math.random() * 10000).toLong() + 1000)
-        Log.d("create cert for $hostname: (id = ${id.toString(10)})")
+        val serial = BigInteger(ApiModule.TS_FULL_STR + random.nextInt(1000, 10000))
         val jv3Builder = JcaX509v3CertificateBuilder(
-            X500Name(issuer), id, certificate.notBefore, certificate.notAfter,
-            X500Name(subject), keyPair.public
+            X500Name(issuer), serial, certificate.notBefore,
+            certificate.notAfter, X500Name(subject), keyPair.public
         )
         val names = GeneralNames(GeneralName(GeneralName.dNSName, hostname))
         jv3Builder.addExtension(Extension.subjectAlternativeName, false, names)
-        val signer = JcaContentSignerBuilder("SHA256WithRSAEncryption").build(keyPair.private)
+        val signer = JcaContentSignerBuilder("SHA256WithRSAEncryption").build(privateKey)
         val cert = JcaX509CertificateConverter().getCertificate(jv3Builder.build(signer))
         certCache[hostname] = cert
         return cert
