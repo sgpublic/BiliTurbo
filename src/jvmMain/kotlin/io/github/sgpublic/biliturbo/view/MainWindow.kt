@@ -1,5 +1,6 @@
 package io.github.sgpublic.biliturbo.view
 
+import androidx.compose.desktop.ui.tooling.preview.Preview
 import androidx.compose.runtime.*
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.window.ApplicationScope
@@ -24,10 +25,11 @@ class MainWindow {
 }
 
 @Composable
+@Preview
 fun ApplicationScope.MainWindow(onCloseRequest: () -> Unit) {
     @Suppress("LocalVariableName")
     val ViewModel by remember { mutableStateOf(MainWindow()) }
-    val icon = painterResource("drawble/ic_launcher.png")
+    val icon = painterResource("drawable/ic_launcher.png")
     Tray(
         icon = icon,
         menu = {

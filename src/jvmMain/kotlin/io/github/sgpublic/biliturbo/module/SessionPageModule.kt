@@ -8,7 +8,12 @@ import java.util.regex.Pattern
 
 class SessionPageModule: BiliTurboProxyModule() {
     override fun match(request: HttpRequest): Boolean {
-        return pattern.matcher(request.uri()).matches()
+        for (pattern in patterns) {
+            if (pattern.matcher(request.uri()).matches()) {
+                return true
+            }
+        }
+        return false
     }
 
     override fun handleResponse(request: HttpRequest, response: FullHttpResponse): FullHttpResponse {
@@ -21,6 +26,9 @@ class SessionPageModule: BiliTurboProxyModule() {
     }
 
     companion object {
-        private val pattern = Pattern.compile("/bangumi/play/ss\\d+")
+        private val patterns = listOf(
+            Pattern.compile("/bangumi/play/ss\\d+"),
+            Pattern.compile("api\\.bilibili\\.com/pgc/view/pc/season\\?season_id=\\d+"),
+        )
     }
 }

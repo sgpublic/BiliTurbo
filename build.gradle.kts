@@ -3,54 +3,67 @@ import org.jetbrains.compose.desktop.application.dsl.TargetFormat
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
-    val kotlin = "1.6.10"
-    kotlin("jvm") version kotlin
-    id("org.jetbrains.compose") version "1.1.1"
+    kotlin("multiplatform")
+    id("org.jetbrains.compose")
 }
 
 group = "io.github.sgpublic"
-version = "1.0"
+version = "1.0-SNAPSHOT"
 
-dependencies {
-    testImplementation(kotlin("test"))
-    implementation(compose.desktop.currentOs)
-
-    // https://mvnrepository.com/artifact/org.slf4j/slf4j-api
-    implementation("org.slf4j:slf4j-api:1.7.36")
-
-    val logback = "1.2.11"
-    // https://mvnrepository.com/artifact/ch.qos.logback/logback-core
-    implementation("ch.qos.logback:logback-core:$logback")
-    // https://mvnrepository.com/artifact/ch.qos.logback/logback-classic
-    implementation("ch.qos.logback:logback-classic:$logback")
-
-    // https://mvnrepository.com/artifact/io.netty/netty-all
-    implementation("io.netty:netty-all:4.1.77.Final")
-
-    // https://mvnrepository.com/artifact/com.squareup.okhttp3/okhttp
-    implementation("com.squareup.okhttp3:okhttp:5.0.0-alpha.7")
-
-    // https://mvnrepository.com/artifact/org.bouncycastle/bcpkix-jdk15on
-    implementation("org.bouncycastle:bcpkix-jdk15on:1.70")
-
-    // https://mvnrepository.com/artifact/com.google.code.gson/gson
-    implementation("com.google.code.gson:gson:2.9.0")
-
-    // https://mvnrepository.com/artifact/org.ini4j/ini4j
-    implementation("org.ini4j:ini4j:0.5.4")
+repositories {
+    google()
+    mavenCentral()
+    maven("https://maven.pkg.jetbrains.space/public/p/compose/dev")
 }
 
-tasks.test {
-    useJUnitPlatform()
-}
+kotlin {
+    jvm {
+        compilations.all {
+            kotlinOptions.jvmTarget = "11"
+        }
+        withJava()
+    }
+    sourceSets {
+        val jvmMain by getting {
+            dependencies {
+                implementation(compose.desktop.currentOs)
 
-tasks.withType<KotlinCompile> {
-    kotlinOptions.jvmTarget = "1.8"
+                // https://mvnrepository.com/artifact/org.slf4j/slf4j-api
+                implementation("org.slf4j:slf4j-api:2.0.3")
+
+                val logback = "1.4.4"
+                // https://mvnrepository.com/artifact/ch.qos.logback/logback-core
+                implementation("ch.qos.logback:logback-core:$logback")
+                // https://mvnrepository.com/artifact/ch.qos.logback/logback-classic
+                implementation("ch.qos.logback:logback-classic:$logback")
+
+                // https://mvnrepository.com/artifact/io.netty/netty-all
+                implementation("io.netty:netty-all:4.1.85.Final")
+
+                // https://mvnrepository.com/artifact/com.squareup.okhttp3/okhttp
+                implementation("com.squareup.okhttp3:okhttp:4.10.0")
+
+                // https://mvnrepository.com/artifact/org.bouncycastle/bcpkix-jdk15on
+                implementation("org.bouncycastle:bcpkix-jdk15on:1.70")
+
+                // https://mvnrepository.com/artifact/com.google.code.gson/gson
+                implementation("com.google.code.gson:gson:2.10")
+
+                // https://mvnrepository.com/artifact/org.ini4j/ini4j
+                implementation("org.ini4j:ini4j:0.5.4")
+            }
+        }
+        val jvmTest by getting {
+            dependencies {
+                implementation(kotlin("test"))
+            }
+        }
+    }
 }
 
 compose.desktop {
     application {
-        mainClass = "io.github.sgpublic.biliturbo.Application"
+        mainClass = "MainKt"
         nativeDistributions {
             targetFormats(TargetFormat.Dmg, TargetFormat.Msi, TargetFormat.Deb)
             packageName = "BiliTurbo"

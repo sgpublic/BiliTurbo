@@ -13,7 +13,7 @@ fun Serializable?.toGson(): String {
 }
 
 fun <T> Response.jsonBody(clazz: Class<T>): T {
-    return gson.fromJson(this.body.string(), clazz)
+    return gson.fromJson(this.body?.string(), clazz)
 }
 
 fun <T> FullHttpResponse.jsonBody(clazz: Class<T>): T {
