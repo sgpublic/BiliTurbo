@@ -27,7 +27,6 @@ class SessionPageModule: BiliTurboProxyModule() {
 
     companion object {
         private val patterns = listOf(
-            Pattern.compile("/bangumi/play/ss\\d+"),
             Pattern.compile("api\\.bilibili\\.com/pgc/view/pc/season\\?season_id=\\d+"),
         )
     }

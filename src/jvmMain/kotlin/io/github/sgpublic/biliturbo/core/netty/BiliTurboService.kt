@@ -86,20 +86,18 @@ class BiliTurboService private constructor(
                     Log.d("Proxy already started.")
                     return
                 }
-                biliTurboService = BiliTurboService(
-                    port, object : Callback {
-                        override fun onStart() { callback.onStart() }
-                        override fun onException(e: Exception) { callback.onException(e) }
-                        override fun onStop() {
-                            biliTurboService = null
-                            SslSupport.clearCertCaches()
-                            callback.onStop()
-                        }
+                biliTurboService = BiliTurboService(port, object : Callback {
+                    override fun onStart() { callback.onStart() }
+                    override fun onException(e: Exception) { callback.onException(e) }
+                    override fun onStop() {
+                        biliTurboService = null
+                        SslSupport.clearCertCaches()
+                        callback.onStop()
                     }
-                ).also {
+                }).also {
                     it.start()
                 }
-                Log.i("Proxy started.")
+                Log.i("Proxy started on port: $port")
             }
         }
 

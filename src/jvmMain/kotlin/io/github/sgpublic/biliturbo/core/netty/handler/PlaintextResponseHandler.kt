@@ -12,8 +12,12 @@ class PlaintextResponseHandler(
     private val client: Channel
 ): ChannelInboundHandlerAdapter() {
     override fun channelRead(ctx: ChannelHandlerContext, msg: Any) {
-        val resp = ApiModule.getInstance()
-            .getTurboResponse(request, msg as FullHttpResponse)
+        val resp = if (msg is FullHttpResponse) {
+            ApiModule.getInstance()
+                .getTurboResponse(request, msg)
+        } else {
+            msg
+        }
         client.writeAndFlush(resp)
     }
 }

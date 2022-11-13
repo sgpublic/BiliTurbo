@@ -8,7 +8,7 @@ plugins {
 }
 
 group = "io.github.sgpublic"
-version = "1.0-SNAPSHOT"
+version = "1.0.0"
 
 repositories {
     google()
@@ -63,11 +63,11 @@ kotlin {
 
 compose.desktop {
     application {
-        mainClass = "MainKt"
+        mainClass = "io.github.sgpublic.Application"
         nativeDistributions {
             targetFormats(TargetFormat.Dmg, TargetFormat.Msi, TargetFormat.Deb)
             packageName = "BiliTurbo"
-            packageVersion = "1.0.0"
+            packageVersion = version.toString()
         }
     }
 }

@@ -36,12 +36,12 @@ class ApiModule private constructor(
         if (!hostName.contains("bilibili.com")) {
             return response
         }
-        Log.d("${request.method()} $hostName${request.uri()}")
         var resp: FullHttpResponse = response
         for (module in actions) {
             if (!module.match(request)) {
                 continue
             }
+            Log.d("${request.method()} $hostName${request.uri()}")
             resp = module.handleResponse(request, response)
             break
         }
